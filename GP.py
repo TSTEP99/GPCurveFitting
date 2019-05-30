@@ -1,14 +1,15 @@
-import random
-from inspect import signature
+import random;
+from inspect import signature;
 from math import floor;
-from random import shuffle
+from random import shuffle;
+from copy import deepcopy;
 
 def arity(func):
 	"""Returns the arity or number of parameters of a function"""
 	sig = signature(func);
 	params = sig.parameters
 	return len(params);
-
+#the following four functions are primarily used for testing
 def add(a,b):
 	"""returns the sum of two numbers"""
 	return a+b;
@@ -122,7 +123,7 @@ term_set=['a','b','c','d'];
 str=['subtract', 'a', 'divide', 'c', 'a'];
 func_map={func.__name__:func for func in func_set};
 starting_index=0;
-print(str,"\n");
+#print(str,"\n");
 root,_=prefix_add(str,starting_index,term_set,func_map);
 # #print(root.data)
 # inorder(root);
@@ -175,5 +176,55 @@ def point_mutation(root,func_set,term_set):
 			node2change.setData(term_set[1]);
 		else:
 			node2change.setData(term_set[0]);
-
+	
+def subtree_mutation(root,func_set,term_set,max_d):
+	"""Creates a subtree mutation replacing part of 
+	the tree with a randomly generated subtree"""
+	new_d=random.randint(0,max_d); #generates a random height for the new subtree to be added may edit this to prevent subtrees of height 0
+	func_map={func.__name__:func for func in func_set} #generates a function map
+	
+	method= "grow" if random.randint(0,1) else "full"; #randomly chooses whether to use "full" or "grow"
+	str=gen_random_expr(func_set,term_set,new_d,method); # generates a random prefix expression
+	new_node,_=prefix_add(str,0,term_set,func_map); #generates a new node for the random subtree
+	array=tree2array(root); # gets the nodes of the original tree as a array using tree2array
+	rand_root=random.choice(array); #randomly selects a node from the tree.
+	rand_root.setChildren(new_node.getChildren()); #changes it values in the random node to match that of the new subtree.
+	rand_root.setData(new_node.getData());
+	
+def tree_divider(root):
+	"""divides the roots in an expression tree into two categories,
+	internal nodes and leaves"""
+	array=tree2array(root); #gets the roots into and array in prefix order
+	functions=[]; #initlizes array for internal nodes
+	leaves=[];#intilizes an array for leaves
+	for i in range(len(array)): #Goes the array representation of the expression tree and places each node into its corresponding categories depending on whether or not they have children
+		if not array[i].getChildren():
+			leaves.append(array[i]);
+		else:
+			functions.append(array[i]);
 		
+	return functions,leaves; # returns a tuple of arrays
+
+def crossover(parent1,parent2,func_set,term_set):
+	"""Implements recombination by determining a random crossover point in parent
+	and replacing with a subtree from parent2"""
+	
+	functions,leaves=tree_divider(parent1);  #divides the trees into two sets, internal nodes and leaves
+	array=tree2array(parent2); #gets the ndoes in parent2 as an array
+	
+	rand_root=random.choice(array); # gets the nodes in rand_root and creates a deepcopy
+	copy_root= deepcopy(rand_root);
+	
+	if random.random()<.9: # makes the crossover point a leaf or function as determined by the the probability determined  by J.R. Koza
+		crossover_point=random.choice(functions); 
+		crossover_point.setChildren(copy_root.getChildren()); # changes data at crossover point
+		crossover_point.setData(copy_root.getData());
+	else:
+		crossover_point=random.choice(leaves);
+		crossover_point.setChildren(copy_root.getChildren()); #similar as above
+		crossover_point.setData(copy_root.getData());
+	
+	
+
+	
+	
