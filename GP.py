@@ -238,31 +238,31 @@ class GP_Program:
 			return func(child1,child2);
 	def fitness(self,y,root):
 		y_test=self.tree_interpreter(root);
-		return -sum((y-y_test)**2)
+		return -sum((y-y_test)**2) #returns the negative sum of squares
 	def most_fit(self,array,y):
-		if len(array)<1:
+		if len(array)<1: #Returns None is array has length 0;
 			return None;
-		max_fit= self.fitness(y,array[0]);
+		max_fit= self.fitness(y,array[0]); # gets the fitness of first element and treats it as the max
 		max_root= array[0];
 		
-		for i in range(1,len(array)):
+		for i in range(1,len(array)): # lops throught the rest of the elements to see if anything else is a possible substitute 
 			fit_test= self.fitness(y,array[i]);
-			if fit_test>max_fit:
+			if fit_test>max_fit: #Replaces is the fitness is greater
 				max_root=array[i];
 				max_fit=fit_test;
 		return max_root;
 	
 	def run(self,population_size,generations,max_d,y):
-		population=self.initial_population(population_size,max_d);
-		mid= floor(len(population)/2);
-		for i in range(generations):
-			parent1=self.most_fit(population[:mid],y);
-			parent2=self.most_fit(population[mid:],y);
-			new_population=[];
+		population=self.initial_population(population_size,max_d); #Initializes a population given a specific population_size and max depth
+		mid= floor(len(population)/2);# finds the mid point to split the data set into two
+		for i in range(generations): #the population reconstruction for a set number of generations
+			parent1=self.most_fit(population[:mid],y); # selects the most fit from one half
+			parent2=self.most_fit(population[mid:],y); #selects the most fit from the other
+			new_population=[]; # initializes new population to be empty
 			
-			num_remainings= population_size;
+			num_remainings= population_size; #makes sure the population is refilled to original size
 			
-			num_children= floor(.9*num_remainings);
+			num_children= floor(.9*num_remainings); #adds roughly 90% as children of the two most fit
 			
 			for i in range(num_children):
 				new_population.append(self.crossover(parent1,parent2));
@@ -270,14 +270,14 @@ class GP_Program:
 			
 			num_copy= floor(.8*num_remainings);
 			
-			for i in range(num_copy):
+			for i in range(num_copy): # intilizes roughly 8 percent to be copies of the fit parents
 				if i%2==0:
 					population.append(parent1);
 				else:
 					population.append(parent2);
 			num_remainings=num_remainings-num_copy;
 			
-			for i in range(num_remainings):
+			for i in range(num_remainings): #makes the rest mutations of any member in the population
 				rand_root= random.choice(population)
 				if random.randint(0,1):
 					population.append(self.point_mutation(rand_root))
@@ -285,7 +285,7 @@ class GP_Program:
 					population.append(self.subtree_mutation(rand_root,max_d));
 
 
-		return self.most_fit(population,y);
+		return self.most_fit(population,y); #returns the most fit in the population after generations has run
 	
 	
 		
